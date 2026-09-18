@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel Global de Ventas</title>
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --paper: #f5f7fa;
+      --white: #fff;
+      --sky: #0369a1;
+      --sky-soft: #f0f9ff;
+      --green: #047857;
+      --green-soft: #ecfdf5;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: Georgia, 'Times New Roman', serif; }
+    button, select { font: inherit; }
+    .topbar { position: sticky; top: 0; z-index: 2; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(10px); }
+    .topbar-inner, .content { width: min(100% - 32px, 1120px); margin: auto; }
+    .topbar-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .eyebrow { margin: 0; color: var(--sky); font: 700 11px/1.2 Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin: 5px 0 0; font-size: 20px; }
+    .avatar { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: white; font: 700 14px Arial, sans-serif; }
+    .content { padding: 24px 0 48px; }
+    .hero { padding: 28px; border-radius: 24px; background: var(--ink); color: white; box-shadow: 0 16px 35px rgba(15,23,42,.18); }
+    .hero .date { margin-bottom: 8px; color: #7dd3fc; font: 600 14px Arial, sans-serif; }
+    .hero h2 { max-width: 680px; margin-bottom: 14px; font-size: clamp(30px, 6vw, 52px); line-height: 1.02; }
+    .hero p:last-child { max-width: 560px; margin-bottom: 0; color: #cbd5e1; font: 15px/1.6 Arial, sans-serif; }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+    .kpi, .panel { border: 1px solid var(--line); border-radius: 16px; background: var(--white); box-shadow: 0 5px 15px rgba(15,23,42,.04); }
+    .kpi { padding: 17px; }
+    .kpi.sky { border-color: #bae6fd; background: var(--sky-soft); }
+    .kpi.green { border-color: #a7f3d0; background: var(--green-soft); }
+    .kpi.amber { border-color: #fde68a; background: var(--amber-soft); }
+    .kpi-label { margin-bottom: 9px; color: var(--muted); font: 700 11px Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+    .kpi-value { margin-bottom: 5px; font-size: 28px; font-weight: 900; }
+    .kpi-detail { margin: 0; color: var(--muted); font: 13px Arial, sans-serif; }
+    .panel { padding: 22px; margin-bottom: 18px; }
+    .panel-head { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+    .panel h2 { margin: 3px 0 0; font-size: 22px; }
+    select { border: 1px solid #cbd5e1; border-radius: 8px; padding: 9px 11px; color: var(--ink); background: white; }
+    .bars { display: grid; gap: 15px; }
+    .bar-row { display: grid; grid-template-columns: 48px 1fr 90px; align-items: center; gap: 12px; font: 14px Arial, sans-serif; }
+    .bar-label { color: var(--muted); }
+    .bar-track { height: 12px; overflow: hidden; border-radius: 99px; background: #f1f5f9; }
+    .bar-fill { height: 100%; border-radius: inherit; background: var(--sky); transition: width .3s ease; }
+    .bar-value { text-align: right; font-weight: 700; }
+    .project { padding: 17px 0 0; border-top: 1px solid #f1f5f9; }
+    .project + .project { margin-top: 20px; }
+    .project h3 { margin-bottom: 10px; font-size: 16px; }
+    .status-ok { color: var(--green); font: 14px Arial, sans-serif; }
+    .warning { display: flex; gap: 12px; padding: 15px; border: 1px solid #fde68a; border-radius: 12px; background: var(--amber-soft); color: #78350f; font: 14px/1.5 Arial, sans-serif; }
+    .warning strong { display: block; margin-bottom: 3px; }
+    .warning p { margin: 0; }
+    .warning-icon { display: grid; flex: 0 0 22px; height: 22px; place-items: center; border-radius: 50%; background: #f59e0b; color: white; font-weight: bold; }
+    @media (max-width: 680px) {
+      .topbar-inner, .content { width: min(100% - 24px, 1120px); }
+      .content { padding-top: 14px; }
+      .hero { padding: 22px; border-radius: 20px; }
+      .kpis { grid-template-columns: 1fr; }
+      .kpi { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 5px 12px; }
+      .kpi-label, .kpi-value, .kpi-detail { grid-column: 1; }
+      .kpi-value { grid-row: 1 / span 2; grid-column: 2; margin: 0; }
+      .kpi-detail { grid-row: 2; }
+      .panel { padding: 18px 15px; }
+      .panel-head { align-items: center; }
+      .panel h2 { font-size: 20px; }
+      .bar-row { grid-template-columns: 38px 1fr 76px; gap: 8px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div><p class="eyebrow">Ventas / Control</p><h1>Panel global</h1></div>
+      <div class="avatar" aria-label="Usuario administrador">A</div>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="hero">
+      <p class="date">Lunes, 14 de septiembre de 2026</p>
+      <h2>Una vista clara para decidir más rápido.</h2>
+      <p>Indicadores consolidados de los proyectos administrativos del área de ventas.</p>
+    </section>
+
+    <section class="kpis" aria-label="Indicadores principales">
+      <article class="kpi sky"><div class="kpi-label">Ventas globales</div><div class="kpi-value" id="total">$2,450,000</div><p class="kpi-detail">Acumulado disponible</p></article>
+      <article class="kpi green"><div class="kpi-label">Variación semanal</div><div class="kpi-value">+14%</div><p class="kpi-detail">Contra semana anterior</p></article>
+      <article class="kpi green" id="active-kpi"><div class="kpi-label">Módulos activos</div><div class="kpi-value" id="active">2 / 2</div><p class="kpi-detail">Estado de los proyectos</p></article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><p class="eyebrow">Tendencia</p><h2>Ventas por periodo</h2></div><select id="period" aria-label="Periodo del gráfico"><option value="week">Semana</option><option value="month">Mes</option></select></div>
+      <div class="bars" id="chart"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><p class="eyebrow">Proyectos</p><h2>Estado de procesamiento</h2></div></div>
+      <article class="project"><h3>Diario de Facturación</h3><div id="facturacion"></div></article>
+      <article class="project"><h3>Consolidado Supabase</h3><p class="status-ok">Conexión disponible. Última actualización: hoy.</p></article>
+    </section>
+  </main>
+
+  <script>
+    const datasets = {
+      week: [['Lun', 380000], ['Mar', 520000], ['Mié', 420000], ['Jue', 610000], ['Vie', 560000]],
+      month: [['Sem 1', 1450000], ['Sem 2', 1830000], ['Sem 3', 2120000], ['Sem 4', 2450000]]
+    };
+
+    function renderChart(period) {
+      const chart = document.querySelector('#chart');
+      const data = datasets[period];
+      const max = Math.max(...data.map(item => item[1]));
+      chart.innerHTML = data.map(([label, value]) => `
+        <div class="bar-row"><span class="bar-label">${label}</span><div class="bar-track"><div class="bar-fill" style="width:${value / max * 100}%"></div></div><span class="bar-value">$${value.toLocaleString('es-MX')}</span></div>
+      `).join('');
+    }
+
+    document.querySelector('#period').addEventListener('change', event => renderChart(event.target.value));
+    renderChart('week');
+
+    // Simula que el origen Excel todavía no está disponible, sin detener los demás módulos.
+    document.querySelector('#facturacion').innerHTML = `
+      <div class="warning" role="status"><span class="warning-icon">!</span><div><strong>Diario de Facturación está pausado</strong><p>No se encontró el archivo de origen: diario-facturacion.xlsx. El resto de la plataforma continúa disponible.</p></div></div>
+    `;
+    document.querySelector('#active').textContent = '1 / 2';
+    document.querySelector('#active-kpi').className = 'kpi amber';
+  </script>
+</body>
+</html>
