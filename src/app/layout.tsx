@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/manrope';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Panel Global de Ventas',
-  description: 'Reportes e indicadores de ventas.',
+  title: 'Truper · Inteligencia comercial',
+  description: 'De tus archivos a una operación conectada. Proyectos, indicadores y fuentes de información en un mismo espacio.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

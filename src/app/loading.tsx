@@ -1,0 +1,1 @@
+export default function Loading() { return <main className="standalone-state" role="status"><span className="loading-brand">T</span><h1>Preparando tu espacio…</h1><div className="skeleton-lines"><i /><i /><i /></div></main>; }
