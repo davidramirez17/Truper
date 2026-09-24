@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderKanban, Database, ChartNoAxesCombined, Bell, Settings2 } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Database, ChartNoAxesCombined, Bell, Settings2, Users, History, Activity, Palette } from 'lucide-react';
 import type { WorkspaceView } from '../analytics/types';
 
 export const navigation = [
@@ -7,6 +7,12 @@ export const navigation = [
   { view: 'sources' as const, href: '/fuentes', label: 'Fuentes de datos', icon: Database },
   { view: 'reports' as const, href: '/reportes', label: 'Reportes', icon: ChartNoAxesCombined },
   { view: 'alerts' as const, href: '/alertas', label: 'Centro de alertas', icon: Bell },
+  { view: 'history' as const, href: '/cargas', label: 'Historial de cargas', icon: History },
+  { view: 'activity' as const, href: '/actividad', label: 'Actividad', icon: Activity },
+];
+export const adminNavigation = [
+  { view: 'users' as const, href: '/usuarios', label: 'Usuarios y accesos', icon: Users },
+  { view: 'design' as const, href: '/diseno', label: 'Sistema de diseño', icon: Palette },
 ];
 export const settingsNav = { view: 'settings' as const, href: '/configuracion', label: 'Configuración', icon: Settings2 };
 export const pageInfo: Record<WorkspaceView, { title: string; description: string; eyebrow: string }> = {
@@ -17,4 +23,8 @@ export const pageInfo: Record<WorkspaceView, { title: string; description: strin
   alerts: { title: 'Enfócate en lo que importa.', description: 'Identifica pendientes y encuentra el siguiente paso para resolverlos.', eyebrow: 'CENTRO DE ALERTAS' },
   settings: { title: 'Un espacio a tu medida.', description: 'Personaliza tu experiencia y conoce lo que sigue para tu operación.', eyebrow: 'CONFIGURACIÓN' },
   detail: { title: '', description: '', eyebrow: 'DETALLE DEL PROYECTO' },
+  users: { title: 'El equipo que lo hace posible.', description: 'Cuentas reales, roles claros y el acceso correcto para cada persona.', eyebrow: 'ADMINISTRACIÓN' },
+  history: { title: 'El origen, siempre a la vista.', description: 'Cada archivo incorporado y la versión que alimenta tus indicadores.', eyebrow: 'HISTORIAL DE CARGAS' },
+  activity: { title: 'Una operación transparente.', description: 'Proyectos, cargas y cambios de acceso, en un registro común.', eyebrow: 'ACTIVIDAD' },
+  design: { title: 'El lenguaje de tu plataforma.', description: 'La base visual que compartirán todos los procesos que vengan.', eyebrow: 'DISEÑO' },
 };

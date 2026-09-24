@@ -1,68 +1,51 @@
 import 'server-only';
-import { leerFacturacion } from '@/lib/excelReader';
-import { supabase } from '@/lib/supabase';
-import { demoData } from './demo';
-import type { WorkspaceData, SalesRecord } from './types';
+import type { WorkspaceData, Project, ImportBatch, AuditEntry, ProjectMember, SalesRecord } from './types';
+import type { Profile } from '../auth/types';
+import { requireSession } from '../auth/session';
+import { shiftDate } from './selectors';
 
-function parseDate(value: unknown): string | null {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0 && value < 100000) {
-    return new Date(Date.UTC(1899, 11, 30) + Math.floor(value) * 86400000).toISOString().slice(0, 10);
-  }
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}(T.*)?$/.test(value)) return null;
-  const date = value.slice(0, 10);
-  const parsed = new Date(`${date}T12:00:00Z`);
-  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date ? date : null;
-}
-
-export async function getWorkspaceData(mode: 'demo' | 'real'): Promise<WorkspaceData> {
-  if (mode === 'demo') return demoData;
+type ProjectRow = { id: string; name: string; description: string; owner_id: string; active_batch_id: string | null };
+export async function getWorkspaceData(): Promise<WorkspaceData> {
+  const { client, profile } = await requireSession();
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
-  const data: WorkspaceData = {
-    mode, asOf: today, records: [], alerts: [],
-    projects: [
-      { id: 'facturacion', name: 'Diario de facturación', description: 'Facturación normalizada desde el archivo de origen.', initials: 'DF', color: 'orange', status: 'unconfigured', source: 'diario-facturacion.xlsx', owner: 'Sin responsable asignado', updatedAt: null },
-      { id: 'consolidado', name: 'Consolidado de ventas', description: 'Último indicador disponible en Supabase. Se presenta por separado para evitar duplicar facturación.', initials: 'CV', color: 'blue', status: 'unconfigured', source: 'Supabase · kpis_ventas', owner: 'Sin responsable asignado', updatedAt: null },
-    ],
-  };
-  // Reading the dashboard never sends mail or mutates the source.
-  const excel = await leerFacturacion();
-  if (excel.ok) {
-    let invalid = 0;
-    const normalized: SalesRecord[] = [];
-    excel.data.forEach((row, index) => {
-      const date = parseDate(row.fechaFactura ?? row['Fecha factura'] ?? row.Fecha ?? row.fecha);
-      const cents = Math.round(Number(row.importe) * 100);
-      if (!date || !Number.isSafeInteger(cents) || !row.cliente?.trim()) { invalid++; return; }
-      normalized.push({ id: `F-${index + 1}`, projectId: 'facturacion', date, client: row.cliente, region: row.zonaVentas || 'Sin zona', amountCents: cents });
-    });
-    const latest = normalized.map(row => row.date).sort().at(-1) ?? null;
-    data.records = normalized;
-    data.projects[0].status = invalid ? 'attention' : 'ready';
-    data.projects[0].updatedAt = latest;
-    if (latest) data.asOf = latest;
-    if (invalid) data.alerts.push({ id: 'invalid-rows', projectId: 'facturacion', severity: 'warning', title: `${invalid} filas requieren revisión`, message: 'Se excluyeron filas sin cliente, importe válido o fecha reconocible. Revisa el archivo original.' });
-  } else {
-    data.projects[0].message = excel.code === 'MISSING_FILE' ? 'Agrega el archivo en la carpeta de origen configurada.' : 'No fue posible leer la fuente. Revisa el formato del archivo.';
-    data.alerts.push({ id: 'excel-source', projectId: 'facturacion', severity: 'warning', title: 'Conecta tu archivo de facturación', message: data.projects[0].message });
+  const result: WorkspaceData = { mode: 'real', asOf: today, projects: [], records: [], alerts: [], profile, users: [], imports: [], members: [], activity: [] };
+  const [projectsQuery, importsQuery, membersQuery, auditQuery, usersQuery] = await Promise.all([
+    client.from('truper_projects').select('id,name,description,owner_id,active_batch_id').order('created_at', { ascending: false }).limit(500),
+    client.from('truper_imports').select('id,project_id,filename,row_count,created_at,created_by').order('created_at', { ascending: false }).limit(200),
+    client.from('truper_project_members').select('project_id,user_id,permission').limit(1000),
+    client.from('truper_audit').select('id,actor_id,project_id,action,detail,created_at').order('created_at', { ascending: false }).limit(100),
+    profile.role === 'superadmin' ? client.from('truper_profiles').select('id,email,full_name,role,status,created_at').order('created_at', { ascending: false }).limit(500) : Promise.resolve({ data: [], error: null }),
+  ]);
+  if ([projectsQuery, importsQuery, membersQuery, auditQuery, usersQuery].some(query => query.error)) {
+    return { ...result, connectionError: 'No fue posible leer todos los datos. Revisa la conexión y las migraciones de la plataforma, y vuelve a intentar.' };
   }
-  if (supabase) {
-    try {
-      const { data: row, error } = await supabase.from('kpis_ventas').select('ventas_totales, kpi_semanal, fecha').order('fecha', { ascending: false }).limit(1).maybeSingle().abortSignal(AbortSignal.timeout(6000));
-      const amount = row?.ventas_totales;
-      const cents = Math.round(Number(amount) * 100);
-      const date = parseDate(row?.fecha);
-      if (error || amount === null || amount === undefined || amount === '' || !Number.isSafeInteger(cents) || !date) throw new Error('Invalid snapshot');
-      data.snapshot = { amountCents: cents, weekly: String(row?.kpi_semanal ?? 'Sin comparativo'), date };
-      data.projects[1].status = 'ready';
-      data.projects[1].updatedAt = date;
-    } catch {
-      data.projects[1].status = 'attention';
-      data.projects[1].message = 'No fue posible consultar el indicador. Verifica conexión, permisos y formato.';
-      data.alerts.push({ id: 'supabase-read', projectId: 'consolidado', severity: 'error', title: 'Revisa la conexión de ventas', message: data.projects[1].message });
-    }
-  } else {
-    data.projects[1].message = 'Configura la conexión a Supabase para consultar indicadores.';
+  result.imports = importsQuery.data as ImportBatch[];
+  result.members = membersQuery.data as ProjectMember[];
+  result.activity = auditQuery.data as AuditEntry[];
+  result.users = usersQuery.data as Profile[];
+  const projectRows = projectsQuery.data as ProjectRow[];
+  result.projects = projectRows.map((project, index): Project => {
+    const batch = result.imports?.find(item => item.id === project.active_batch_id);
+    const member = result.members?.find(item => item.project_id === project.id && item.user_id === profile.id);
+    return { id: project.id, name: project.name, description: project.description, initials: project.name.slice(0,2).toUpperCase(), color: (['orange','blue','purple'] as const)[index % 3], status: project.active_batch_id ? 'ready' : 'unconfigured', source: batch?.filename ?? (project.active_batch_id ? 'Carga anterior' : 'Sin archivo cargado'), owner: result.users?.find(user => user.id === project.owner_id)?.full_name || (project.owner_id === profile.id ? profile.full_name : 'Equipo del proyecto'), updatedAt: null, activeBatchId: project.active_batch_id, canEdit: ['superadmin','admin'].includes(profile.role) || project.owner_id === profile.id || member?.permission === 'editor' };
+  });
+  const batches = projectRows.flatMap(project => project.active_batch_id ? [project.active_batch_id] : []);
+  if (!batches.length) return result;
+  const latest = await client.from('truper_sales_rows').select('record_date').in('batch_id', batches).order('record_date', { ascending: false }).limit(1).maybeSingle();
+  if (latest.error) return { ...result, connectionError: 'No pudimos consultar los movimientos. Inténtalo nuevamente.' };
+  result.asOf = latest.data?.record_date ?? today;
+  const all: SalesRecord[] = [];
+  for (let offset = 0; offset <= 50000; offset += 1000) {
+    const page = await client.from('truper_sales_rows').select('id,project_id,record_date,client,region,amount_cents').in('batch_id', batches).gte('record_date', shiftDate(result.asOf, -59)).order('id').range(offset, offset + 999);
+    if (page.error) return { ...result, records: [], connectionError: 'No se pudo completar la lectura. No se muestran totales parciales.' };
+    if (offset === 50000 && page.data.length) return { ...result, records: [], connectionError: 'El volumen del periodo supera los 50,000 registros. Se requiere habilitar agregación en servidor antes de mostrar totales.' };
+    all.push(...page.data.map(row => ({ id: `MOV-${row.id}`, projectId: row.project_id, date: row.record_date, client: row.client, region: row.region, amountCents: Number(row.amount_cents) })));
+    if (page.data.length < 1000) break;
   }
-  return data;
+  result.records = all;
+  result.projects.forEach(project => {
+    project.updatedAt = all.filter(row => row.projectId === project.id).reduce<string | null>((latest, row) => !latest || row.date > latest ? row.date : latest, null);
+    if (!project.activeBatchId) result.alerts.push({ id: `source-${project.id}`, projectId: project.id, severity: 'info', title: 'Este proyecto espera su primer archivo', message: `Carga la información de ${project.name} para empezar a consultar sus indicadores.` });
+  });
+  return result;
 }

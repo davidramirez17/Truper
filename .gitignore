@@ -3,3 +3,16 @@ node_modules/
 out/
 .env*.local
 *.log
+*.tsbuildinfo
+*.bak
+.vercel/
+test-results/
+playwright-report/
+audit-local.json
+.env
+.env.*
+!.env.example
+
+.env.local
+
+.env.local

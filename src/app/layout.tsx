@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import './globals.css';
+import './platform.css';
+import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
   title: 'Truper · Inteligencia comercial',
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body>{children}</body>
+      <body><Providers>{children}</Providers></body>
     </html>
   );
 }
