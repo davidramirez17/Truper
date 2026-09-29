@@ -22,13 +22,21 @@ export function selectAnalytics(records: SalesRecord[], asOf: string, days: Peri
   const previous = scoped.filter(row => row.date >= previousStart && row.date < start);
   const total = current.reduce((sum, row) => sum + row.amountCents, 0);
   const previousTotal = previous.reduce((sum, row) => sum + row.amountCents, 0);
+  const currentByDate = current.reduce<Map<string, number>>((acc, row) => {
+    acc.set(row.date, (acc.get(row.date) ?? 0) + row.amountCents);
+    return acc;
+  }, new Map());
+  const previousByDate = previous.reduce<Map<string, number>>((acc, row) => {
+    acc.set(row.date, (acc.get(row.date) ?? 0) + row.amountCents);
+    return acc;
+  }, new Map());
   const trend = Array.from({ length: days }, (_, index) => {
     const date = shiftDate(start, index);
     const prev = shiftDate(date, -days);
     return {
       date,
-      current: current.filter(row => row.date === date).reduce((sum, row) => sum + row.amountCents, 0),
-      previous: previous.filter(row => row.date === prev).reduce((sum, row) => sum + row.amountCents, 0),
+      current: currentByDate.get(date) ?? 0,
+      previous: previousByDate.get(prev) ?? 0,
     };
   });
   const regions = Object.entries(current.reduce<Record<string, number>>((acc, row) => {

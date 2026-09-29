@@ -7,4 +7,6 @@ export const recordSchema = z.object({
 export const importSchema = z.object({ projectId: z.uuid(), requestId: z.uuid(), filename: z.string().trim().min(1).max(255), records: z.array(recordSchema).min(1).max(10000) });
 export const manageUserSchema = z.object({ id: z.uuid(), role: z.enum(['superadmin','admin','analyst','viewer']), status: z.enum(['pending','active','suspended']) });
 export const memberSchema = z.object({ projectId: z.uuid(), userId: z.uuid(), permission: z.enum(['viewer','editor','none']) });
+export const updateUserProfileSchema = z.object({ id: z.uuid(), fullName: z.string().trim().min(2).max(100), area: z.string().trim().min(2).max(100), jobTitle: z.string().trim().min(2).max(120), avatarUrl: z.url().max(1000).nullable(), managerId: z.uuid().nullable() });
+export const updateMyProfileSchema = z.object({ fullName: z.string().trim().min(2).max(100), avatarUrl: z.url().max(1000).nullable() });
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };

@@ -5,19 +5,22 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { useTheme } from 'next-themes';
 import { Brand } from '@/components/ui/Brand';
+import { Avatar } from '@/components/ui/Avatar';
+import { PdfButton } from '@/components/ui/PdfButton';
 import { ProjectDialog } from '../platform/ProjectDialog';
 import { UsersView, HistoryView, ActivityView, DesignView } from '../platform/PlatformViews';
+import { SystemHealthView } from '../platform/SystemHealthView';
 import { canCreateProjects, roleLabels } from '../auth/types';
 import { ArrowDownToLine, ArrowUpRight, Bell, CalendarDays, Check, ChevronDown, ChevronRight, CircleHelp, Command, Database, FileSpreadsheet, Menu, Moon, Plus, RefreshCw, Search, ShieldCheck, Sparkles, Sun, X } from 'lucide-react';
 import { Dialog } from '@/components/ui/Dialog';
 import { MobileDock } from '@/components/MobileDock';
 import { UploadDialog, downloadText } from '../sources/UploadDialog';
 import { csvText, dateLabel, selectAnalytics } from '../analytics/selectors';
-import type { Period, WorkspaceData, WorkspaceView } from '../analytics/types';
+import type { Period, SystemHealth, WorkspaceData, WorkspaceView } from '../analytics/types';
 import { navigation, adminNavigation, pageInfo, settingsNav } from './navigation';
 import { AlertsView, DashboardView, DetailView, ProjectsView, ReportsView, SettingsView, SourcesView } from './views';
 
-export function Workspace({ data, view, projectId }: { data: WorkspaceData; view: WorkspaceView; projectId?: string }) {
+export function Workspace({ data, view, projectId, systemHealth }: { data: WorkspaceData; view: WorkspaceView; projectId?: string; systemHealth?: SystemHealth }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -27,9 +30,10 @@ export function Workspace({ data, view, projectId }: { data: WorkspaceData; view
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState('');
   const { resolvedTheme: theme, setTheme } = useTheme();
+  const [themeReady, setThemeReady] = useState(false);
+  const stableTheme = themeReady && theme ? theme : 'light';
   const profile = data.profile!;
-  const initials = (profile.full_name || profile.email).split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase();
-  const visibleNavigation = [...navigation, ...adminNavigation.filter(item => item.view !== 'users' || profile.role === 'superadmin')];
+  const visibleNavigation = [...navigation, ...(profile.role === 'superadmin' ? adminNavigation : [])];
   const canCreate = canCreateProjects(profile.role);
   const canUpload = data.projects.some(project => project.canEdit);
   function openUpload() { if (canUpload) setDialog('upload'); else if (canCreate) setDialog('project'); else setToast('Necesitas permiso de carga en un proyecto. Solicítalo al superusuario.'); }
@@ -43,6 +47,9 @@ export function Workspace({ data, view, projectId }: { data: WorkspaceData; view
   const info = currentProject ? { ...pageInfo.detail, title: currentProject.name, description: currentProject.description } : pageInfo[view];
   const attention = data.alerts.filter(alert => alert.severity !== 'info').length;
 
+  useEffect(() => {
+    setThemeReady(true);
+  }, []);
   useEffect(() => {
     function handleKey(event: KeyboardEvent) { if ((event.ctrlKey || event.metaKey) && event.key === 'k') { event.preventDefault(); setDialog(value => value === 'search' ? null : 'search'); } }
     document.addEventListener('keydown', handleKey); return () => document.removeEventListener('keydown', handleKey);
@@ -73,7 +80,7 @@ export function Workspace({ data, view, projectId }: { data: WorkspaceData; view
     <div className="sidebar-bottom"><div className="sidebar-note"><span className="small-orbit"><Sparkles size={19} /></span><strong>Una base para ir más lejos.</strong><p>Conecta tus procesos.<br />Multiplica tus posibilidades.</p><button onClick={() => { setMobileOpen(false); setDialog('guide'); }}>Conoce el camino <ArrowUpRight size={15} /></button></div>
       <Link href={href('/configuracion')} onClick={() => setMobileOpen(false)} className="nav-item" aria-current={view === 'settings' ? 'page' : undefined}><settingsNav.icon size={19} strokeWidth={1.7} /><span>Configuración</span></Link>
       <button className="nav-item help-nav" onClick={() => { setMobileOpen(false); setDialog('guide'); }}><CircleHelp size={19} strokeWidth={1.7} /><span>Guía de la plataforma</span><ArrowUpRight size={15} /></button>
-      <div className="sidebar-profile"><span className="profile-avatar">{initials}</span><div><strong>{profile.full_name || profile.email}</strong><small>{roleLabels[profile.role]}</small></div><span className="online-dot" /></div>
+      <div className="sidebar-profile"><Avatar src={profile.avatar_url} name={profile.full_name} email={profile.email} /><div><strong>{profile.full_name || profile.email}</strong><small>{roleLabels[profile.role]}</small></div><span className="online-dot" /></div>
     </div>
   </>;
   const viewProps = { data, analytics, href, onUpload: openUpload, onCreate: () => setDialog('project'), onExport: exportRecords };
@@ -83,11 +90,11 @@ export function Workspace({ data, view, projectId }: { data: WorkspaceData; view
     <aside className="sidebar">{navigationContent}</aside>
     {mobileOpen && <Dialog title="Tu espacio de trabajo" onClose={() => setMobileOpen(false)}><div className="mobile-navigation">{navigationContent}</div></Dialog>}
     <div className="workspace-main">
-      <header className="topbar"><div className="breadcrumb"><button className="icon-button mobile-menu" aria-label="Abrir navegación" onClick={() => setMobileOpen(true)}><Menu size={21} /></button><span className="breadcrumb-home">Espacio de trabajo</span><ChevronRight size={13} className="breadcrumb-home" /><span>{view === 'detail' ? 'Proyectos' : visibleNavigation.find(item => item.view === view)?.label ?? 'Configuración'}</span></div><div className="topbar-actions"><button className="global-search" onClick={() => { setSearch(''); setDialog('search'); }}><Search size={16} /><span>Buscar en tu espacio</span><kbd><Command size={11} /> K</kbd></button><span className="topbar-divider" /><button className="icon-button theme-toggle" aria-label={theme === 'dark' ? 'Activar tema claro' : 'Activar tema oscuro'} onClick={() => changeTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}</button><Link href={href('/alertas')} className="icon-button notification-button" aria-label={`Centro de alertas, ${attention} pendientes`}><Bell size={19} />{attention > 0 && <i />}</Link><Link href={href('/configuracion')} className="topbar-avatar" aria-label="Configuración de mi cuenta">{initials}</Link></div></header>
+      <header className="topbar"><div className="breadcrumb"><button className="icon-button mobile-menu" aria-label="Abrir navegación" onClick={() => setMobileOpen(true)}><Menu size={21} /></button><span className="breadcrumb-home">Espacio de trabajo</span><ChevronRight size={13} className="breadcrumb-home" /><span>{view === 'detail' ? 'Proyectos' : visibleNavigation.find(item => item.view === view)?.label ?? 'Configuración'}</span></div><div className="topbar-actions"><button className="global-search" onClick={() => { setSearch(''); setDialog('search'); }}><Search size={16} /><span>Buscar en tu espacio</span><kbd><Command size={11} /> K</kbd></button><PdfButton compact /><span className="topbar-divider" /><button className="icon-button theme-toggle" aria-label={stableTheme === 'dark' ? 'Activar tema claro' : 'Activar tema oscuro'} onClick={() => changeTheme(stableTheme === 'dark' ? 'light' : 'dark')}>{stableTheme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}</button><Link href={href('/alertas')} className="icon-button notification-button" aria-label={`Centro de alertas, ${attention} pendientes`}><Bell size={19} />{attention > 0 && <i />}</Link><Link href={href('/configuracion')} className="topbar-avatar" aria-label="Configuración de mi cuenta"><Avatar src={profile.avatar_url} name={profile.full_name} email={profile.email} size="small" /></Link></div></header>
       <main id="main-content" className="content" aria-busy={pending}>
         {data.connectionError ? <div className="notice error" role="alert"><Database size={19} /><p>{data.connectionError}</p><button className="text-button" onClick={() => router.refresh()}>Reintentar</button></div> : <div className="workspace-context"><span><ShieldCheck size={14} />{roleLabels[profile.role]}</span><span><i />Datos de tus proyectos · acceso verificado</span></div>}
         {view === 'detail' && <Link href={href('/proyectos')} className="back-link">← Todos los proyectos</Link>}
-        <div className={`page-heading page-heading-${view}`}><div><p className="eyebrow">{info.eyebrow}</p><h1>{info.title}</h1><p className="page-description">{info.description}</p></div><div className="heading-actions">{view === 'projects' && canCreate && <button className="button secondary" onClick={() => setDialog('project')}><Plus size={17} />Nuevo proyecto</button>}{['overview', 'reports', 'detail'].includes(view) && <button className="button secondary" onClick={() => exportRecords()} disabled={!analytics.current.length}><ArrowDownToLine size={16} /><span>Exportar</span></button>}<button className="button primary" onClick={openUpload}><Plus size={18} />Cargar archivo</button></div></div>
+        <div className={`page-heading page-heading-${view}`}><div><p className="eyebrow">{info.eyebrow}</p><h1>{info.title}</h1><p className="page-description">{info.description}</p></div><div className="heading-actions">{view === 'projects' && canCreate && <button className="button secondary" onClick={() => setDialog('project')}><Plus size={17} />Nuevo proyecto</button>}{['overview', 'reports', 'detail'].includes(view) && <button className="button secondary" onClick={() => exportRecords()} disabled={!analytics.current.length}><ArrowDownToLine size={16} /><span>Exportar</span></button>}</div></div>
         {['overview', 'reports', 'detail'].includes(view) && <section className="filter-bar" aria-label="Filtros del análisis"><div className="filter-controls">{view !== 'detail' && <label className="select-control"><Database size={15} /><span className="sr-only">Proyecto</span><select value={selectedProject} onChange={event => updateFilter('proyecto', event.target.value)}><option value="all">Todos los proyectos</option>{data.projects.filter(project => project.status !== 'planned').map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select><ChevronDown size={14} /></label>}<label className="select-control"><CalendarDays size={16} /><span className="sr-only">Periodo</span><select value={period} onChange={event => updateFilter('periodo', event.target.value)}><option value={7}>Últimos 7 días</option><option value={14}>Últimos 14 días</option><option value={30}>Últimos 30 días</option></select><ChevronDown size={14} /></label><span className="date-range">{dateLabel(analytics.start)} – {dateLabel(data.asOf)}, {data.asOf.slice(0, 4)}</span></div><div className="refresh-control"><span className="status-dot" /><span>Corte: {dateLabel(data.asOf)}</span><button className="icon-button" disabled={pending} aria-label="Actualizar información" onClick={() => { setRefreshCount(value => value + 1); startTransition(() => router.refresh()); }}><RefreshCw size={15} className={pending ? 'spin' : ''} /></button></div></section>}
         <div className={pending ? 'view-content view-pending' : 'view-content'}>
           {view === 'overview' && <DashboardView {...viewProps} />}
@@ -95,11 +102,12 @@ export function Workspace({ data, view, projectId }: { data: WorkspaceData; view
           {view === 'sources' && <SourcesView {...viewProps} />}
           {view === 'reports' && <ReportsView {...viewProps} />}
           {view === 'alerts' && <AlertsView {...viewProps} />}
-          {view === 'settings' && <SettingsView data={data} theme={theme ?? 'light'} onTheme={changeTheme} />}
+          {view === 'settings' && <SettingsView data={data} theme={stableTheme} onTheme={changeTheme} />}
           {view === 'users' && profile.role === 'superadmin' && <UsersView data={data} />}
           {view === 'history' && <HistoryView data={data} />}
           {view === 'activity' && <ActivityView data={data} />}
-          {view === 'design' && <DesignView />}
+          {view === 'system' && profile.role === 'superadmin' && <SystemHealthView health={systemHealth} />}
+          {view === 'design' && profile.role === 'superadmin' && <DesignView />}
           {view === 'detail' && currentProject && <DetailView {...viewProps} project={currentProject} />}
         </div>
         <footer className="page-footer"><span><span className="footer-mark">T</span> Información clara. Decisiones que avanzan.</span><span>Datos de tus proyectos · MXN<i />Truper Workspace</span></footer>
@@ -113,7 +121,7 @@ export function Workspace({ data, view, projectId }: { data: WorkspaceData; view
       view={view}
       href={href}
       attention={attention}
-      onUpload={openUpload}
+      onUpload={view === 'sources' ? openUpload : undefined}
     />
     {toast && <div className="toast" role="status"><Check size={18} /><span>{toast}</span><button aria-label="Cerrar aviso" onClick={() => setToast('')}><X size={15} /></button></div>}
   </div>;

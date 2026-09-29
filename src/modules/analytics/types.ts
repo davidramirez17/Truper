@@ -35,6 +35,33 @@ export type DataAlert = {
   message: string;
 };
 
+export type SystemHealthTable = {
+  name: string;
+  rowsEstimate: number;
+  totalBytes: number;
+  indexBytes: number;
+  liveTuples: number;
+  deadTuples: number;
+  seqScans: number;
+  idxScans: number;
+  lastAnalyze: string | null;
+  lastVacuum: string | null;
+};
+
+export type SystemHealth = {
+  databaseSizeBytes: number;
+  databaseLimitBytes: number | null;
+  cacheHitRatio: number | null;
+  activeConnections: number | null;
+  commits: number | null;
+  rollbacks: number | null;
+  tempBytes: number | null;
+  tables: SystemHealthTable[];
+  generatedAt: string;
+  queryMs: number;
+  error?: string;
+};
+
 export type WorkspaceData = {
   mode: 'demo' | 'real' | 'local';
   asOf: string;
@@ -51,4 +78,4 @@ export type WorkspaceData = {
 };
 
 export type Period = 7 | 14 | 30;
-export type WorkspaceView = 'overview' | 'projects' | 'sources' | 'reports' | 'alerts' | 'settings' | 'detail' | 'users' | 'history' | 'design' | 'activity';
+export type WorkspaceView = 'overview' | 'projects' | 'sources' | 'reports' | 'alerts' | 'settings' | 'detail' | 'users' | 'history' | 'design' | 'activity' | 'system';

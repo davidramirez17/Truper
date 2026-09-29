@@ -9,6 +9,12 @@ Truper Workspace convierte Excel/CSV operativos en movimientos normalizados e in
 ```text
 Excel/CSV → worker SheetJS → mapeo y validación → Zod → Server Action
 → RPC Supabase + RLS → carga activa e historial → indicadores → exportación CSV
+
+Superusuario → `/sistema` → RPC de observabilidad protegido → tamaño/estadísticas agregadas → recomendaciones manuales
+
+Superusuario/usuario → `/usuarios` o `/configuracion` → foto y perfil → Storage `truper-avatars` + RPC de perfil → directorio/organigrama
+
+Cualquier vista → `PdfButton` → impresión del navegador → PDF elegido por la persona
 ```
 
 ## Capas
@@ -28,6 +34,11 @@ Excel/CSV → worker SheetJS → mapeo y validación → Zod → Server Action
 - Una nueva carga conserva el historial y reemplaza solo la versión activa.
 - Las consultas con error no muestran totales parciales.
 - La UI puede esconder acciones, pero la autoridad de permisos está en Supabase.
+- La vista de salud es de solo lectura: muestra métricas agregadas y nunca ejecuta limpieza destructiva desde el navegador.
+- El porcentaje de uso solo se calcula si `SUPABASE_DATABASE_LIMIT_BYTES` está configurado; no se inventa el límite del plan.
+- Fuentes es el único punto de entrada para nuevas cargas; los demás módulos enlazan a él.
+- La foto es un archivo público del bucket de avatares con límite de 5 MB y formatos controlados; el perfil se actualiza por RPC y la base comprueba quién puede modificarlo.
+- El PDF se genera desde la vista ya renderizada; no se crea un servicio de documentos ni se guardan copias en la base.
 
 ## Diseño visual
 

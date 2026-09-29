@@ -25,6 +25,8 @@ No arregles el síntoma a ciegas. Primero reproduce, registra la evidencia, form
 - Si falla una carga: revisar worker, `validation.ts`, Zod, `requestId`, RPC y constraints de la migración.
 - Si los números no cuadran: revisar `asOf`, periodo, centavos, `selectAnalytics()` y el archivo fuente.
 - Si solo falla en navegador: revisar frontera `'use client'`, worker, tamaño del archivo y tiempo límite.
+- Si aparece `Hydration failed`: comparar el HTML estable del servidor con el primer render del cliente; revisar especialmente `next-themes`, fechas, locale, `window` y datos aleatorios. Corregir la causa de render, no taparla con `suppressHydrationWarning`.
+- Si una foto falla: distinguir URL inválida, bucket/política ausente, tamaño/formato y RPC de perfil; comprobar migración remota antes de culpar al componente.
 
 ## Cierre
 

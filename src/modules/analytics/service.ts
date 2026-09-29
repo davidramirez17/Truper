@@ -23,11 +23,18 @@ export async function getWorkspaceData(): Promise<WorkspaceData> {
   result.members = membersQuery.data as ProjectMember[];
   result.activity = auditQuery.data as AuditEntry[];
   result.users = usersQuery.data as Profile[];
+  if (profile.role === 'superadmin') {
+    const peopleQuery = await client.from('truper_profiles').select('id,email,full_name,role,status,created_at,area,job_title,avatar_url,manager_id').order('created_at', { ascending: false }).limit(500);
+    if (!peopleQuery.error && peopleQuery.data) result.users = peopleQuery.data as Profile[];
+  }
   const projectRows = projectsQuery.data as ProjectRow[];
+  const importsById = new Map(result.imports.map(item => [item.id, item]));
+  const membersByProject = new Map(result.members.filter(item => item.user_id === profile.id).map(item => [item.project_id, item]));
+  const usersById = new Map(result.users.map(user => [user.id, user]));
   result.projects = projectRows.map((project, index): Project => {
-    const batch = result.imports?.find(item => item.id === project.active_batch_id);
-    const member = result.members?.find(item => item.project_id === project.id && item.user_id === profile.id);
-    return { id: project.id, name: project.name, description: project.description, initials: project.name.slice(0,2).toUpperCase(), color: (['orange','blue','purple'] as const)[index % 3], status: project.active_batch_id ? 'ready' : 'unconfigured', source: batch?.filename ?? (project.active_batch_id ? 'Carga anterior' : 'Sin archivo cargado'), owner: result.users?.find(user => user.id === project.owner_id)?.full_name || (project.owner_id === profile.id ? profile.full_name : 'Equipo del proyecto'), updatedAt: null, activeBatchId: project.active_batch_id, canEdit: ['superadmin','admin'].includes(profile.role) || project.owner_id === profile.id || member?.permission === 'editor' };
+    const batch = project.active_batch_id ? importsById.get(project.active_batch_id) : undefined;
+    const member = membersByProject.get(project.id);
+    return { id: project.id, name: project.name, description: project.description, initials: project.name.slice(0,2).toUpperCase(), color: (['orange','blue','purple'] as const)[index % 3], status: project.active_batch_id ? 'ready' : 'unconfigured', source: batch?.filename ?? (project.active_batch_id ? 'Carga anterior' : 'Sin archivo cargado'), owner: usersById.get(project.owner_id)?.full_name || (project.owner_id === profile.id ? profile.full_name : 'Equipo del proyecto'), updatedAt: null, activeBatchId: project.active_batch_id, canEdit: ['superadmin','admin'].includes(profile.role) || project.owner_id === profile.id || member?.permission === 'editor' };
   });
   const batches = projectRows.flatMap(project => project.active_batch_id ? [project.active_batch_id] : []);
   if (!batches.length) return result;
@@ -43,8 +50,13 @@ export async function getWorkspaceData(): Promise<WorkspaceData> {
     if (page.data.length < 1000) break;
   }
   result.records = all;
+  const latestByProject = new Map<string, string>();
+  all.forEach(row => {
+    const latest = latestByProject.get(row.projectId);
+    if (!latest || row.date > latest) latestByProject.set(row.projectId, row.date);
+  });
   result.projects.forEach(project => {
-    project.updatedAt = all.filter(row => row.projectId === project.id).reduce<string | null>((latest, row) => !latest || row.date > latest ? row.date : latest, null);
+    project.updatedAt = latestByProject.get(project.id) ?? null;
     if (!project.activeBatchId) result.alerts.push({ id: `source-${project.id}`, projectId: project.id, severity: 'info', title: 'Este proyecto espera su primer archivo', message: `Carga la información de ${project.name} para empezar a consultar sus indicadores.` });
   });
   return result;

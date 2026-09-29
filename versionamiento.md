@@ -26,6 +26,8 @@ Este archivo registra cambios importantes del proyecto y de su forma de trabajo.
 - No actualizar una dependencia global del proyecto sin verificar compatibilidad con Node, Next y el lockfile.
 - No versionar `.env*` reales, logs, `.next`, reportes temporales ni datos de usuarios.
 - Los documentos derivados `docs/graph.json` y `docs/MAPA.md` se regeneran con `pnpm graph` y se revisan junto con cambios estructurales.
+- Una migración de Supabase se versiona junto con su prueba local, pero se marca como pendiente hasta que una sesión administrativa confirme su aplicación remota.
+- Las capacidades compartidas de perfil, avatar y PDF se documentan en `docs/humano/`; si se reutilizan en otro proyecto, se copian como patrón y se adapta el contrato.
 
 ## Historial
 
@@ -41,3 +43,9 @@ Este archivo registra cambios importantes del proyecto y de su forma de trabajo.
 - La aplicación mantiene la versión `0.1.0`.
 - La fuente de ventas actual es Excel/CSV; los indicadores se calculan desde la carga activa de cada proyecto.
 - La seguridad combina sesión, contratos Zod, RPC y RLS; ocultar una acción en la UI no se considera autorización.
+
+### 2026-09-29 — Directorio y flujo de actualización
+
+- Se agregó el directorio de personas, organigrama, permisos por proyecto, fotos y perfil propio.
+- Se centralizó la carga de datos en `/fuentes` y se añadió PDF por impresión del navegador.
+- Se corrigió la hidratación del tema y se mantuvo la separación entre cambios locales y activación remota.

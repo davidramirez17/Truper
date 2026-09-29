@@ -10,9 +10,12 @@ export const getSession = cache(async () => {
   const client = await createSupabaseServer();
   const { data: { user }, error } = await client.auth.getUser();
   if (error || !user) return { state: 'anonymous' as const };
-  const { data, error: profileError } = await client.from('truper_profiles').select('id,email,full_name,role,status,created_at').eq('id', user.id).single();
-  if (profileError || !data) return { state: 'schema_missing' as const, user };
-  return { state: 'authenticated' as const, user, profile: data as Profile, client };
+  const rich = await client.from('truper_profiles').select('id,email,full_name,role,status,created_at,area,job_title,avatar_url,manager_id').eq('id', user.id).single();
+  if (!rich.error && rich.data) return { state: 'authenticated' as const, user, profile: rich.data as Profile, client };
+  if (rich.error?.code !== '42703') return { state: 'schema_missing' as const, user };
+  const legacy = await client.from('truper_profiles').select('id,email,full_name,role,status,created_at').eq('id', user.id).single();
+  if (legacy.error || !legacy.data) return { state: 'schema_missing' as const, user };
+  return { state: 'authenticated' as const, user, profile: { ...legacy.data, area: 'Sin definir', job_title: 'Integrante', avatar_url: null, manager_id: null } as Profile, client };
 });
 
 export async function requireSession() {

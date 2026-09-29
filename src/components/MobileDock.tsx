@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import {
   Bell,
   ChartNoAxesCombined,
+  Database,
   FolderKanban,
   Home,
   Plus,
@@ -16,7 +17,7 @@ type Props = {
   view: WorkspaceView;
   href: (path: string) => string;
   attention: number;
-  onUpload: () => void;
+  onUpload?: () => void;
 };
 
 const leftItems = [
@@ -110,18 +111,10 @@ export function MobileDock({
         </div>
 
         <div className="mobile-dock-action-wrap">
-          <motion.button
-            type="button"
-            className="mobile-dock-action"
-            onClick={onUpload}
-            whileTap={{ scale: 0.91 }}
-            aria-label="Cargar o validar archivo"
-          >
-            <Plus size={26} strokeWidth={2.2} />
-          </motion.button>
+          {onUpload ? <motion.button type="button" className="mobile-dock-action" onClick={onUpload} whileTap={{ scale: 0.91 }} aria-label="Actualizar datos"><Plus size={26} strokeWidth={2.2} /></motion.button> : <Link className="mobile-dock-action" href={href('/fuentes')} aria-label="Abrir actualización de datos"><Database size={24} strokeWidth={2.2} /></Link>}
 
           <span className="mobile-dock-action-label">
-            Cargar
+            {onUpload ? 'Actualizar' : 'Datos'}
           </span>
         </div>
 

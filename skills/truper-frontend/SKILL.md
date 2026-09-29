@@ -20,6 +20,10 @@ description: Usa esta skill al cambiar pantallas, rutas visuales, componentes Re
 5. Mantén foco visible, etiquetas para controles, navegación por teclado, contraste AA y usable en 390/768/1280 px.
 6. Los permisos visibles mejoran la UX, pero nunca sustituyen `requireSession`, RPC o RLS.
 7. No agregues una pantalla ficticia: conéctala a `WorkspaceData` o declara el estado como prototipo.
+8. Usa `src/components/ui/Avatar.tsx` para identidad visual y `src/components/ui/PdfButton.tsx` para guardar la vista; no inventes botones de descarga por módulo.
+9. Toda nueva carga debe enlazar a `/fuentes`; el selector de archivo vive en `UploadDialog.tsx`.
+10. Para usuarios, distinguir vista de directorio, organigrama, perfil propio, rol y permiso de proyecto; una persona normal no ve administración de superusuario.
+11. Evita leer `next-themes` durante el primer render si ese valor cambia entre servidor y navegador; usa una salida estable hasta montar.
 
 ## Flujo de cambio
 
@@ -36,3 +40,4 @@ Revisa impacto en `Workspace.tsx`, `views.tsx`, `types.ts`, navegación, compone
 - [ ] Se revisó teclado, foco y responsive.
 - [ ] `pnpm typecheck`, `pnpm lint` y `pnpm test` pasan.
 - [ ] `pnpm build` pasa si cambió ruta, configuración o renderizado server.
+- [ ] La impresión/PDF oculta navegación, filtros y controles, y conserva títulos, tablas y datos útiles.

@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireSession } from '../auth/session';
 import { canCreateProjects } from '../auth/types';
-import { createProjectSchema, importSchema, manageUserSchema, memberSchema, type ActionResult } from './contracts';
+import { createProjectSchema, importSchema, manageUserSchema, memberSchema, updateMyProfileSchema, updateUserProfileSchema, type ActionResult } from './contracts';
 
 export async function createProject(input: unknown): Promise<ActionResult<string>> {
   const { profile, client } = await requireSession();
@@ -38,5 +38,26 @@ export async function assignMember(input: unknown): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: 'Selecciona un proyecto, un usuario y un permiso válido.' };
   const { error } = await client.rpc('truper_assign_member', { target_project: parsed.data.projectId, target_user: parsed.data.userId, access_level: parsed.data.permission });
   if (error) return { ok: false, error: 'No se pudo asignar el permiso. El usuario debe estar activo.' };
+  revalidatePath('/', 'layout'); return { ok: true, data: undefined };
+}
+
+export async function updateUserProfile(input: unknown): Promise<ActionResult> {
+  const { profile, client } = await requireSession();
+  if (profile.role !== 'superadmin') return { ok: false, error: 'Solo el superusuario puede editar el directorio.' };
+  const parsed = updateUserProfileSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Revisa nombre, área, puesto, foto y responsable.' };
+  const { id, fullName, area, jobTitle, avatarUrl, managerId } = parsed.data;
+  if (id === managerId) return { ok: false, error: 'Una persona no puede ser su propio responsable.' };
+  const { error } = await client.rpc('truper_update_user_profile', { target: id, new_full_name: fullName, new_area: area, new_job_title: jobTitle, new_avatar_url: avatarUrl, new_manager_id: managerId });
+  if (error) return { ok: false, error: 'No se pudo guardar el perfil organizacional. Verifica que el responsable esté activo.' };
+  revalidatePath('/', 'layout'); return { ok: true, data: undefined };
+}
+
+export async function updateMyProfile(input: unknown): Promise<ActionResult> {
+  const { client } = await requireSession();
+  const parsed = updateMyProfileSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Escribe un nombre válido y una foto segura.' };
+  const { error } = await client.rpc('truper_update_my_profile', { new_full_name: parsed.data.fullName, new_avatar_url: parsed.data.avatarUrl });
+  if (error) return { ok: false, error: 'No se pudo actualizar tu perfil.' };
   revalidatePath('/', 'layout'); return { ok: true, data: undefined };
 }

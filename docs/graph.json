@@ -15,17 +15,14 @@
     "src/app/not-found.tsx",
     "src/app/recuperar/page.tsx",
     "src/app/registro/page.tsx",
-    "src/components/GraficoVentas.tsx",
-    "src/components/KpiCard.tsx",
     "src/components/MobileDock.tsx",
-    "src/components/ModuloError.tsx",
-    "src/components/Navbar.tsx",
     "src/components/Providers.tsx",
+    "src/components/ui/Avatar.tsx",
     "src/components/ui/Brand.tsx",
     "src/components/ui/Dialog.tsx",
     "src/components/ui/MetricCard.tsx",
+    "src/components/ui/PdfButton.tsx",
     "src/lib/alertService.ts",
-    "src/lib/excelReader.ts",
     "src/lib/supabase/browser.ts",
     "src/lib/supabase/config.ts",
     "src/lib/supabase/server.ts",
@@ -40,8 +37,10 @@
     "src/modules/auth/types.ts",
     "src/modules/platform/PlatformViews.tsx",
     "src/modules/platform/ProjectDialog.tsx",
+    "src/modules/platform/SystemHealthView.tsx",
     "src/modules/platform/actions.ts",
     "src/modules/platform/contracts.ts",
+    "src/modules/platform/health.ts",
     "src/modules/registry.ts",
     "src/modules/sources/UploadDialog.tsx",
     "src/modules/sources/validation.ts",
@@ -58,6 +57,10 @@
     {
       "from": "src/app/[[...slug]]/page.tsx",
       "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/app/[[...slug]]/page.tsx",
+      "to": "src/modules/platform/health.ts"
     },
     {
       "from": "src/app/[[...slug]]/page.tsx",
@@ -204,12 +207,32 @@
       "to": "src/modules/platform/contracts.ts"
     },
     {
+      "from": "src/modules/platform/health.ts",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/platform/health.ts",
+      "to": "src/modules/auth/session.ts"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/components/ui/Avatar.tsx"
+    },
+    {
       "from": "src/modules/platform/PlatformViews.tsx",
       "to": "src/components/ui/Dialog.tsx"
     },
     {
       "from": "src/modules/platform/PlatformViews.tsx",
       "to": "src/components/ui/MetricCard.tsx"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/components/ui/PdfButton.tsx"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/lib/supabase/browser.ts"
     },
     {
       "from": "src/modules/platform/PlatformViews.tsx",
@@ -238,6 +261,10 @@
     {
       "from": "src/modules/platform/ProjectDialog.tsx",
       "to": "src/modules/platform/actions.ts"
+    },
+    {
+      "from": "src/modules/platform/SystemHealthView.tsx",
+      "to": "src/modules/analytics/types.ts"
     },
     {
       "from": "src/modules/sources/UploadDialog.tsx",
@@ -280,8 +307,20 @@
       "to": "src/modules/analytics/types.ts"
     },
     {
+      "from": "src/modules/workspace/views.tsx",
+      "to": "src/modules/auth/types.ts"
+    },
+    {
+      "from": "src/modules/workspace/views.tsx",
+      "to": "src/modules/platform/PlatformViews.tsx"
+    },
+    {
       "from": "src/modules/workspace/Workspace.tsx",
       "to": "src/components/MobileDock.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/components/ui/Avatar.tsx"
     },
     {
       "from": "src/modules/workspace/Workspace.tsx",
@@ -290,6 +329,10 @@
     {
       "from": "src/modules/workspace/Workspace.tsx",
       "to": "src/components/ui/Dialog.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/components/ui/PdfButton.tsx"
     },
     {
       "from": "src/modules/workspace/Workspace.tsx",
@@ -310,6 +353,10 @@
     {
       "from": "src/modules/workspace/Workspace.tsx",
       "to": "src/modules/platform/ProjectDialog.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/platform/SystemHealthView.tsx"
     },
     {
       "from": "src/modules/workspace/Workspace.tsx",

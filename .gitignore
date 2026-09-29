@@ -14,3 +14,4 @@ audit-local.json
 .env
 .env.*
 !.env.example
+.codegraph/

@@ -45,6 +45,9 @@ src/app (rutas y handlers)
 - Los importes internos son centavos enteros (`amountCents`/`amount_cents`); se muestran como MXN.
 - La base conserva cargas anteriores y solo una carga activa por proyecto.
 - Nunca se hace `INSERT` anónimo directo: la sesión, Zod, RPC y RLS deben coincidir.
+- La carga de Excel es un flujo central en `/fuentes`; no agregues selectores de archivo independientes en dashboard, reportes o tarjetas de proyecto.
+- Usuarios, roles, permisos de proyecto, área, puesto y responsable deben respetar `truper_profiles`, los contratos, RPC/RLS y la migración `202609290002_truper_people_and_permissions.sql`.
+- `PdfButton` es la pieza común para imprimir/guardar vistas; las nuevas pantallas deben ser legibles sin navegación y ocultar controles mediante `@media print`.
 
 ## 5. Cambios sensibles
 
@@ -81,6 +84,7 @@ Añade `pnpm build` si cambias rutas, server actions, configuración, dependenci
 - Actualiza `versionamiento.md` solo para cambios de proceso, arquitectura, dependencias o documentación base; no por cada ajuste visual menor.
 - Limpia temporales, `.bak`, logs locales y salidas generadas que no deban versionarse. No borres datos de usuario.
 - El reporte final debe separar hechos verificados, validaciones ejecutadas y pendientes.
+- Si la tarea toca Supabase, separa siempre código/migración local de migración realmente aplicada en remoto.
 
 ## 8. Skills del proyecto
 
@@ -99,7 +103,9 @@ No cargues una skill por su nombre si el problema no pertenece a su dominio.
 
 - `rtk` comprime salidas de terminal; úsalo para comandos ruidosos y consulta `rtk gain` ocasionalmente.
 - `codeburn status` mide consumo de sesiones localmente; no lo uses como fuente de verdad funcional.
+- `codegraph` mantiene un índice semántico local; úsalo para explorar símbolos, referencias, callers y alcance antes de leer muchos archivos. Comprueba `codegraph status --root .` y sincroniza con `codegraph sync --root .` cuando cambie el código.
 - El grafo del proyecto es `pnpm graph`; no asumir que una herramienta externa conoce el repositorio.
+- `pnpm graph` y CodeGraph se complementan: el primero produce `docs/MAPA.md` y `docs/graph.json` versionables; CodeGraph usa `.codegraph/`, que es local y está ignorado.
 - No activar hooks globales que modifiquen otros proyectos sin documentar qué archivos/configuración cambian.
 
 ## 10. Estilo de colaboración

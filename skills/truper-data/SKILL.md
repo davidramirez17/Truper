@@ -11,7 +11,7 @@ description: Usa esta skill al cambiar Excel/CSV, indicadores, contratos Zod, Su
 - Normalización de archivo: `src/modules/sources/validation.ts` y `validation.worker.ts`.
 - Mutaciones server: `src/modules/platform/actions.ts`.
 - Lectura server: `src/modules/analytics/service.ts`.
-- Tablas, RPC, constraints y RLS: `supabase/migrations/202609230001_truper_workspace.sql`.
+- Tablas, RPC, constraints y RLS: `supabase/migrations/202609230001_truper_workspace.sql`, `202609290001_truper_system_health.sql` y `202609290002_truper_people_and_permissions.sql`.
 - Pruebas: `tests/data.test.ts` y `tests/security.test.ts`.
 
 ## Reglas no negociables
@@ -24,6 +24,9 @@ description: Usa esta skill al cambiar Excel/CSV, indicadores, contratos Zod, Su
 6. Conservar cargas anteriores y activar solo una carga por proyecto.
 7. No aceptar fechas imposibles, importes con más de dos decimales, campos vacíos o columnas ambiguas.
 8. Una migración nueva debe ser aditiva, explícita, revisada contra RLS y acompañada por prueba.
+9. Excel/CSV solo entra por `/fuentes`; no crear acciones de carga duplicadas en cada dashboard.
+10. Para perfiles, separar rol general, miembro/proyecto, área, puesto, responsable y foto; nunca usar el campo visual para autorizar.
+11. Las fotos usan `truper-avatars`, formatos JPG/PNG/WebP y máximo 5 MB; probar superusuario y usuario activo, y no afirmar que el bucket remoto existe sin verificarlo.
 
 ## Antes de cambiar un contrato
 
@@ -36,3 +39,4 @@ Documenta quién produce el dato, quién lo consume, qué pasa con históricos, 
 - [ ] La prueba de seguridad sigue demostrando aislamiento.
 - [ ] `pnpm typecheck`, `pnpm lint` y `pnpm test` pasan.
 - [ ] Se actualizan mapa técnico, plan y bitácora cuando corresponda.
+- [ ] Se separa claramente migración local de migración aplicada en Supabase remoto.

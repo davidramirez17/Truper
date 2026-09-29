@@ -47,7 +47,12 @@ El resultado fue:
 - skills reducidas al dominio real del proyecto;
 - RTK para comprimir salidas de terminal;
 - CodeBurn para observar consumo de sesiones;
+- CodeGraph para construir un índice semántico local de archivos, símbolos, referencias, dependencias y posibles pruebas relacionadas;
 - limpieza de `.bak`, previews, auditorías locales y archivos generados versionados;
+- un flujo central de actualización de datos en `/fuentes`, sin repetir “Agregar archivo” en cada sección;
+- un módulo de personas con roles, permisos, área, puesto, foto, responsable directo y organigrama;
+- perfil propio para usuarios normales y una acción común para guardar cualquier vista como PDF;
+- corrección de la hidratación del selector de tema de `next-themes`;
 - comprobaciones de TypeScript, lint, pruebas y build.
 
 ## 3. Qué puede copiarse a otro proyecto
@@ -71,7 +76,10 @@ Copiar estas piezas como base, revisando sus rutas y nombres:
 | `skills/truper-data` | Reglas de Excel, Supabase y RLS | Solo si el nuevo proyecto usa esos contratos |
 | `.codex/hooks.json`, `.rtk/`, `.github/hooks/` | Integración local de RTK | Opcional, revisar rutas y agente |
 | `RTK.md` | Cómo usar RTK en el repositorio | Sí, adaptando comandos |
+| `CodeGraph` | Índice semántico local para explorar conexiones y alcance de cambios | Instalar en cada máquina; no copiar el binario |
 | `versionamiento.md` | Reglas de cambios y releases | Sí, adaptando el flujo Git |
+
+Para Truper, las piezas nuevas que acompañan esta base son `src/components/ui/Avatar.tsx`, `src/components/ui/PdfButton.tsx`, `src/modules/platform/PlatformViews.tsx` y la migración `202609290002_truper_people_and_permissions.sql`. En otro proyecto no se copian a ciegas: se copia la idea, se revisan sus permisos y se cambia el modelo de personas.
 
 No se deben copiar como si fueran universales las migraciones, los nombres de tablas, los roles, las rutas de Truper, los contratos de Excel ni las reglas específicas de negocio.
 
@@ -81,13 +89,61 @@ No copiar a otro proyecto:
 
 - `.env.local`, claves, tokens, contraseñas ni archivos con datos reales;
 - `node_modules/`, `.next/`, `out/` o carpetas de compilación;
+- `.codegraph/` y su caché local;
 - `tsconfig.tsbuildinfo`, logs, `.bak`, previews o auditorías locales;
 - migraciones y seeds de otro producto sin revisarlas;
 - `docs/graph.json` y `docs/MAPA.md` sin regenerarlos;
 - una bitácora vieja como si describiera el proyecto nuevo;
 - binarios instalados en el equipo.
 
-RTK y CodeBurn se instalan en la máquina, no se guardan dentro del repositorio. En esta sesión quedaron verificados RTK `0.50.0` y CodeBurn `0.9.25`. Context Mode y Tokensave no se instalaron porque no eran necesarios para el contrato actual; pueden evaluarse después, por separado y con una justificación clara.
+El botón PDF es local al navegador: no implica que el nuevo proyecto tenga un generador PDF en servidor. Las fotos y el modelo de roles tampoco deben trasladarse sin revisar privacidad, almacenamiento y autorización.
+
+RTK, CodeBurn y CodeGraph se instalan en la máquina, no se guardan dentro del repositorio. En esta sesión quedaron verificados RTK `0.50.0`, CodeBurn `0.9.25` y CodeGraph `2.3.31`. Context Mode y Tokensave no se instalaron porque no eran necesarios para el contrato actual; pueden evaluarse después, por separado y con una justificación clara.
+
+### CodeGraph
+
+Instalación global en Windows:
+
+```powershell
+npm install --global @lzehrung/codegraph
+codegraph doctor
+```
+
+Después de una instalación global en Windows, abre una terminal nueva para que se actualice el `PATH`. Si la terminal actual todavía no encuentra el comando, usa temporalmente `%APPDATA%\npm\codegraph.ps1` o reinicia el agente.
+
+Preparación de un repositorio:
+
+```powershell
+codegraph init --root .
+codegraph status --root .
+codegraph sync --root .
+```
+
+Consultas útiles para una IA:
+
+```powershell
+codegraph orient --root .
+codegraph explore "¿cómo funciona la autenticación?" --root . --pretty
+codegraph refs src/modules/auth --root .
+codegraph callers src/app/[[...slug]]/page.tsx --root .
+```
+
+CodeGraph crea `.codegraph/`, que contiene el índice y la caché local. Esa carpeta debe permanecer en `.gitignore`; no contiene el código fuente que la IA necesita compartir por Git. La configuración global de agentes se instala con:
+
+```powershell
+codegraph install codex --yes
+codegraph install claude --yes
+codegraph install agents --yes
+```
+
+Después hay que reiniciar o recargar el agente. La integración genérica para Copilot se mantiene en `.github/copilot-instructions.md`; si una versión de CodeGraph no ofrece destino Copilot, Copilot puede usar los comandos de terminal documentados y el grafo del repositorio.
+
+CodeGraph y `pnpm graph` tienen funciones distintas:
+
+- `pnpm graph` genera `docs/graph.json` y `docs/MAPA.md`, resultados pequeños, reproducibles y versionables.
+- CodeGraph mantiene `.codegraph/` local y permite preguntas semánticas, símbolos, callers, referencias, impacto y contexto acotado.
+
+Usar ambos: el primero conserva continuidad para todo el equipo; el segundo acelera la exploración de la máquina actual.
 
 ## 5. Cómo preparar un proyecto nuevo
 

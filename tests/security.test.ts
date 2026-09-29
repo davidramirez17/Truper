@@ -14,6 +14,8 @@ test('Postgres: aislamiento, roles, importación atómica e idempotencia', async
     grant usage on schema auth to authenticated,anon;
     grant execute on function auth.uid() to authenticated,anon;`);
   await db.exec(await readFile(new URL('../supabase/migrations/202609230001_truper_workspace.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609290001_truper_system_health.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609290002_truper_people_and_permissions.sql', import.meta.url), 'utf8'));
   await db.query('insert into auth.users(id,email,raw_user_meta_data) values($1,$2,$3),($4,$5,$6),($7,$8,$9)', [admin,'owner@test.invalid',{full_name:'Owner'},analyst,'analyst@test.invalid',{full_name:'Analyst'},outsider,'outside@test.invalid',{full_name:'Outside',role:'superadmin',status:'active'}]);
   async function asUser<T>(id: string, action: () => Promise<T>) {
     await db.exec('set role authenticated'); await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);
@@ -27,6 +29,7 @@ test('Postgres: aislamiento, roles, importación atómica e idempotencia', async
     await db.exec('set role anon');
     await assert.rejects(db.query('select * from public.truper_sales_rows'),/permission denied/);
     await assert.rejects(db.query("select public.truper_create_project('Inyección','')"),/permission denied/);
+    await assert.rejects(db.query('select public.truper_get_system_health()'),/permission denied/);
     await db.exec('reset role');
   });
   await t.test('cuenta pendiente no puede crear proyectos ni elevar privilegios', async () => {
@@ -36,7 +39,34 @@ test('Postgres: aislamiento, roles, importación atómica e idempotencia', async
     });
   });
   await db.query("update public.truper_profiles set role='superadmin',status='active' where id=$1",[admin]);
+  await t.test('la salud de la base solo está disponible para superusuarios', async () => {
+    await asUser(analyst, async () => {
+      await assert.rejects(db.query('select public.truper_get_system_health()'), /Forbidden/);
+    });
+    await asUser(admin, async () => {
+      const { rows } = await db.query<{ health: { tables: unknown[]; databaseSizeBytes: number } }>('select public.truper_get_system_health() as health');
+      assert.equal(rows[0].health.tables.length, 6);
+      assert.equal(typeof rows[0].health.databaseSizeBytes, 'number');
+    });
+  });
+  await t.test('el perfil organizacional y la foto solo se administran con autorización', async () => {
+    await asUser(analyst, async () => {
+      await assert.rejects(db.query("select public.truper_update_user_profile($1,'Analyst','Ventas','Analista',null,null)",[analyst]), /Forbidden/);
+    });
+    await asUser(admin, async () => {
+      await db.query("select public.truper_update_user_profile($1,'Analyst','Ventas','Analista',null,$2)",[analyst,admin]);
+      const { rows } = await db.query<{ area: string; job_title: string; manager_id: string }>('select area,job_title,manager_id from public.truper_profiles where id=$1',[analyst]);
+      assert.deepEqual(rows[0], { area: 'Ventas', job_title: 'Analista', manager_id: admin });
+    });
+  });
   await asUser(admin,()=>db.query("select public.truper_manage_user($1,'analyst','active')",[analyst]));
+  await t.test('una persona activa puede actualizar solo su propio perfil', async () => {
+    await asUser(analyst, async () => {
+      await db.query("select public.truper_update_my_profile('Analyst actualizado',null)");
+      const { rows } = await db.query<{ full_name: string; avatar_url: string | null }>('select full_name,avatar_url from public.truper_profiles where id=$1',[analyst]);
+      assert.deepEqual(rows[0], { full_name: 'Analyst actualizado', avatar_url: null });
+    });
+  });
   const project = await asUser(admin,async()=>(await db.query<{id:string}>("select public.truper_create_project('Facturación','Proceso de prueba') as id")).rows[0].id);
   await t.test('analista ajeno no lee ni modifica un proyecto', async () => {
     await asUser(analyst,async()=>{
