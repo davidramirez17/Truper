@@ -7,7 +7,7 @@ Registro append-only del proyecto. La entrada más reciente va arriba. No reempl
 - **Estado:** 🟢 avance cerrado y enviado a `origin/main`.
 - **Hecho:** quedaron documentados el directorio/organigrama, roles y permisos, fotos, perfil propio, carga central en `/fuentes`, PDF, corrección de hidratación, salud del sistema, CodeGraph y limpieza estructural.
 - **Validación final:** `pnpm graph` (46 nodos/80 conexiones), CodeGraph sincronizado (88 archivos), `pnpm typecheck`, `pnpm lint`, `pnpm test` (20/20) y `pnpm build` pasan; `git diff --check` pasa.
-- **Commit:** se publicará con el cambio completo de esta sesión en la rama `main`.
+- **Commit:** `9219c8d` publicado en `origin/main` con el cambio completo de esta sesión.
 - **Pendiente externo:** aplicar y confirmar en Supabase remoto `202609290001_truper_system_health.sql` y `202609290002_truper_people_and_permissions.sql`, incluido el bucket `truper-avatars`; también falta el smoke test con el Excel real.
 
 ## 2026-09-29 — Directorio, perfiles, permisos y carga centralizada
