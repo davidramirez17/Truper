@@ -1,7 +1,6 @@
 node_modules/
 .next/
 out/
-.env*.local
 *.log
 *.tsbuildinfo
 *.bak
@@ -9,12 +8,9 @@ out/
 test-results/
 playwright-report/
 audit-local.json
+.tokensave/
+.context-mode/
+.codeburn/
 .env
 .env.*
 !.env.example
-
-.env.local
-
-.env.local
-
-.env.local

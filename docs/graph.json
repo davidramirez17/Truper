@@ -1,0 +1,327 @@
+{
+  "version": 1,
+  "scope": "src",
+  "nodes": [
+    "src/app/[[...slug]]/page.tsx",
+    "src/app/acceso/page.tsx",
+    "src/app/actualizar-clave/page.tsx",
+    "src/app/api/alertas/route.ts",
+    "src/app/auth/callback/route.ts",
+    "src/app/auth/signout/route.ts",
+    "src/app/error.tsx",
+    "src/app/layout.tsx",
+    "src/app/loading.tsx",
+    "src/app/login/page.tsx",
+    "src/app/not-found.tsx",
+    "src/app/recuperar/page.tsx",
+    "src/app/registro/page.tsx",
+    "src/components/GraficoVentas.tsx",
+    "src/components/KpiCard.tsx",
+    "src/components/MobileDock.tsx",
+    "src/components/ModuloError.tsx",
+    "src/components/Navbar.tsx",
+    "src/components/Providers.tsx",
+    "src/components/ui/Brand.tsx",
+    "src/components/ui/Dialog.tsx",
+    "src/components/ui/MetricCard.tsx",
+    "src/lib/alertService.ts",
+    "src/lib/excelReader.ts",
+    "src/lib/supabase/browser.ts",
+    "src/lib/supabase/config.ts",
+    "src/lib/supabase/server.ts",
+    "src/middleware.ts",
+    "src/modules/analytics/SalesChart.tsx",
+    "src/modules/analytics/selectors.ts",
+    "src/modules/analytics/service.ts",
+    "src/modules/analytics/types.ts",
+    "src/modules/auth/AuthForm.tsx",
+    "src/modules/auth/AuthShell.tsx",
+    "src/modules/auth/session.ts",
+    "src/modules/auth/types.ts",
+    "src/modules/platform/PlatformViews.tsx",
+    "src/modules/platform/ProjectDialog.tsx",
+    "src/modules/platform/actions.ts",
+    "src/modules/platform/contracts.ts",
+    "src/modules/registry.ts",
+    "src/modules/sources/UploadDialog.tsx",
+    "src/modules/sources/validation.ts",
+    "src/modules/sources/validation.worker.ts",
+    "src/modules/workspace/Workspace.tsx",
+    "src/modules/workspace/navigation.ts",
+    "src/modules/workspace/views.tsx"
+  ],
+  "edges": [
+    {
+      "from": "src/app/[[...slug]]/page.tsx",
+      "to": "src/modules/analytics/service.ts"
+    },
+    {
+      "from": "src/app/[[...slug]]/page.tsx",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/app/[[...slug]]/page.tsx",
+      "to": "src/modules/workspace/Workspace.tsx"
+    },
+    {
+      "from": "src/app/acceso/page.tsx",
+      "to": "src/components/ui/Brand.tsx"
+    },
+    {
+      "from": "src/app/acceso/page.tsx",
+      "to": "src/modules/auth/session.ts"
+    },
+    {
+      "from": "src/app/actualizar-clave/page.tsx",
+      "to": "src/modules/auth/AuthShell.tsx"
+    },
+    {
+      "from": "src/app/actualizar-clave/page.tsx",
+      "to": "src/modules/auth/session.ts"
+    },
+    {
+      "from": "src/app/api/alertas/route.ts",
+      "to": "src/lib/alertService.ts"
+    },
+    {
+      "from": "src/app/auth/callback/route.ts",
+      "to": "src/lib/supabase/server.ts"
+    },
+    {
+      "from": "src/app/auth/signout/route.ts",
+      "to": "src/lib/supabase/server.ts"
+    },
+    {
+      "from": "src/app/layout.tsx",
+      "to": "src/components/Providers.tsx"
+    },
+    {
+      "from": "src/app/login/page.tsx",
+      "to": "src/lib/supabase/config.ts"
+    },
+    {
+      "from": "src/app/login/page.tsx",
+      "to": "src/modules/auth/AuthShell.tsx"
+    },
+    {
+      "from": "src/app/login/page.tsx",
+      "to": "src/modules/auth/session.ts"
+    },
+    {
+      "from": "src/app/recuperar/page.tsx",
+      "to": "src/lib/supabase/config.ts"
+    },
+    {
+      "from": "src/app/recuperar/page.tsx",
+      "to": "src/modules/auth/AuthShell.tsx"
+    },
+    {
+      "from": "src/app/registro/page.tsx",
+      "to": "src/lib/supabase/config.ts"
+    },
+    {
+      "from": "src/app/registro/page.tsx",
+      "to": "src/modules/auth/AuthShell.tsx"
+    },
+    {
+      "from": "src/components/MobileDock.tsx",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/lib/supabase/browser.ts",
+      "to": "src/lib/supabase/config.ts"
+    },
+    {
+      "from": "src/lib/supabase/server.ts",
+      "to": "src/lib/supabase/config.ts"
+    },
+    {
+      "from": "src/middleware.ts",
+      "to": "src/lib/supabase/config.ts"
+    },
+    {
+      "from": "src/modules/analytics/SalesChart.tsx",
+      "to": "src/modules/analytics/selectors.ts"
+    },
+    {
+      "from": "src/modules/analytics/selectors.ts",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/analytics/service.ts",
+      "to": "src/modules/analytics/selectors.ts"
+    },
+    {
+      "from": "src/modules/analytics/service.ts",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/analytics/service.ts",
+      "to": "src/modules/auth/session.ts"
+    },
+    {
+      "from": "src/modules/analytics/service.ts",
+      "to": "src/modules/auth/types.ts"
+    },
+    {
+      "from": "src/modules/analytics/types.ts",
+      "to": "src/modules/auth/types.ts"
+    },
+    {
+      "from": "src/modules/auth/AuthForm.tsx",
+      "to": "src/lib/supabase/browser.ts"
+    },
+    {
+      "from": "src/modules/auth/AuthShell.tsx",
+      "to": "src/components/ui/Brand.tsx"
+    },
+    {
+      "from": "src/modules/auth/AuthShell.tsx",
+      "to": "src/modules/auth/AuthForm.tsx"
+    },
+    {
+      "from": "src/modules/auth/session.ts",
+      "to": "src/lib/supabase/config.ts"
+    },
+    {
+      "from": "src/modules/auth/session.ts",
+      "to": "src/lib/supabase/server.ts"
+    },
+    {
+      "from": "src/modules/auth/session.ts",
+      "to": "src/modules/auth/types.ts"
+    },
+    {
+      "from": "src/modules/platform/actions.ts",
+      "to": "src/modules/auth/session.ts"
+    },
+    {
+      "from": "src/modules/platform/actions.ts",
+      "to": "src/modules/auth/types.ts"
+    },
+    {
+      "from": "src/modules/platform/actions.ts",
+      "to": "src/modules/platform/contracts.ts"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/components/ui/Dialog.tsx"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/components/ui/MetricCard.tsx"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/modules/analytics/selectors.ts"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/modules/auth/types.ts"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/modules/platform/actions.ts"
+    },
+    {
+      "from": "src/modules/platform/PlatformViews.tsx",
+      "to": "src/modules/registry.ts"
+    },
+    {
+      "from": "src/modules/platform/ProjectDialog.tsx",
+      "to": "src/components/ui/Dialog.tsx"
+    },
+    {
+      "from": "src/modules/platform/ProjectDialog.tsx",
+      "to": "src/modules/platform/actions.ts"
+    },
+    {
+      "from": "src/modules/sources/UploadDialog.tsx",
+      "to": "src/components/ui/Dialog.tsx"
+    },
+    {
+      "from": "src/modules/sources/UploadDialog.tsx",
+      "to": "src/modules/analytics/selectors.ts"
+    },
+    {
+      "from": "src/modules/sources/UploadDialog.tsx",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/sources/UploadDialog.tsx",
+      "to": "src/modules/platform/actions.ts"
+    },
+    {
+      "from": "src/modules/sources/UploadDialog.tsx",
+      "to": "src/modules/sources/validation.ts"
+    },
+    {
+      "from": "src/modules/workspace/navigation.ts",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/workspace/views.tsx",
+      "to": "src/components/ui/MetricCard.tsx"
+    },
+    {
+      "from": "src/modules/workspace/views.tsx",
+      "to": "src/modules/analytics/SalesChart.tsx"
+    },
+    {
+      "from": "src/modules/workspace/views.tsx",
+      "to": "src/modules/analytics/selectors.ts"
+    },
+    {
+      "from": "src/modules/workspace/views.tsx",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/components/MobileDock.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/components/ui/Brand.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/components/ui/Dialog.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/analytics/selectors.ts"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/analytics/types.ts"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/auth/types.ts"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/platform/PlatformViews.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/platform/ProjectDialog.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/sources/UploadDialog.tsx"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/workspace/navigation.ts"
+    },
+    {
+      "from": "src/modules/workspace/Workspace.tsx",
+      "to": "src/modules/workspace/views.tsx"
+    }
+  ]
+}

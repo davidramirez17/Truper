@@ -1,11 +1,12 @@
 {
-  "name": "plataforma-ventas",
+  "name": "truper-workspace",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "graph": "node scripts/generate-graph.mjs",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
